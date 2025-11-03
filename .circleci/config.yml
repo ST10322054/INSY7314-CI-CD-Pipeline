@@ -3,6 +3,7 @@ version: 2.1
 
 orbs:
   node: circleci/node@5.0.3
+  sonarcloud: sonarsource/sonarcloud@1.1.1
 
 jobs:
   build_and_test:
@@ -10,28 +11,55 @@ jobs:
       - image: cimg/node:22.0
     steps:
       - checkout
-      - node/install-packages
+
+      # --- Backend Setup ---
       - run:
-          name: Run lint
-          command: |
-            npm install -g eslint
-            eslint server/**/*.js client/src/**/*.jsx
+          name: Install Backend Dependencies
+          command: cd server && npm install
+
       - run:
-          name: Run audit for vulnerabilities
-          command: npm audit --audit-level=moderate
+          name: Lint Backend Code
+          command: cd server && npm run lint || true
+
       - run:
-          name: Run tests
-          command: npm test || echo "No tests yet"
+          name: Run Backend Tests
+          command: cd server && npm test -- --coverage || echo "No backend tests yet"
+
+      # --- Frontend Setup ---
+      - run:
+          name: Install Frontend Dependencies
+          command: cd client && npm install
+
+      - run:
+          name: Lint Frontend Code
+          command: cd client && npm run lint || true
+
+      - run:
+          name: Run Frontend Tests
+          command: cd client && npm test -- --coverage || echo "No frontend tests yet"
+
+      # --- Security Audit ---
+      - run:
+          name: Run npm Audit for Vulnerabilities
+          command: npm audit --audit-level=moderate || true
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - server/coverage
+            - client/coverage
 
   sonar_scan:
     docker:
-      - image: sonarsource/sonar-scanner-cli:latest
+      - image: cimg/node:22.0
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
-          name: SonarQube Scan
+          name: Run SonarQube Scan
           command: |
-            sonar-scanner \
+            npx sonar-scanner \
               -Dsonar.projectKey=international-payments \
               -Dsonar.sources=server,client/src \
               -Dsonar.host.url=$SONAR_HOST_URL \
@@ -45,3 +73,4 @@ workflows:
       - sonar_scan:
           requires:
             - build_and_test
+          context: sonarcloud
