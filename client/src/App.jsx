@@ -4,6 +4,8 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import EmployeePortal from './pages/EmployeePortal';
+import PaymentVerification from './pages/PaymentVerification';
+import PaymentSubmission from './pages/PaymentSubmission';
 
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(() => {
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="/login" element={<Login onLogin={handleLogin} />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employee" element={<EmployeePortal />} />
+          <Route path="/employee/verify/:id" element={<PaymentVerification />} />
+          <Route path="/employee/submit/:id" element={<PaymentSubmission />} />
           <Route path="/" element={<WelcomePage loggedIn={loggedIn} />} />
         </Routes>
       </div>

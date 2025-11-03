@@ -10,7 +10,7 @@ const router = express.Router();
 // Registration with server-side whitelist/regex validation
 router.post('/register', [
   body('fullName').matches(/^[A-Za-z\s\-'\.]{2,100}$/).withMessage('Invalid name'),
-  body('idNumber').isLength({ min: 10, max: 20 }).isNumeric().withMessage('Invalid ID number'),
+  body('idNumber').isLength(/^\d{10,20}$/).isNumeric().withMessage('Invalid ID number'),
   body('accountNumber').matches(/^\d{6,20}$/).withMessage('Invalid account number'),
   body('username').isAlphanumeric().isLength({ min: 4 }),
   body('password').matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)

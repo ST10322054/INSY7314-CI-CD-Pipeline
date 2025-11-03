@@ -1,0 +1,47 @@
+#This pipeline runs lint, audit, tests, then runs a SonarQube scan.
+version: 2.1
+
+orbs:
+  node: circleci/node@5.0.3
+
+jobs:
+  build_and_test:
+    docker:
+      - image: cimg/node:22.0
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Run lint
+          command: |
+            npm install -g eslint
+            eslint server/**/*.js client/src/**/*.jsx
+      - run:
+          name: Run audit for vulnerabilities
+          command: npm audit --audit-level=moderate
+      - run:
+          name: Run tests
+          command: npm test || echo "No tests yet"
+
+  sonar_scan:
+    docker:
+      - image: sonarsource/sonar-scanner-cli:latest
+    steps:
+      - checkout
+      - run:
+          name: SonarQube Scan
+          command: |
+            sonar-scanner \
+              -Dsonar.projectKey=international-payments \
+              -Dsonar.sources=server,client/src \
+              -Dsonar.host.url=$SONAR_HOST_URL \
+              -Dsonar.login=$SONAR_TOKEN
+
+workflows:
+  version: 2
+  build_and_scan:
+    jobs:
+      - build_and_test
+      - sonar_scan:
+          requires:
+            - build_and_test

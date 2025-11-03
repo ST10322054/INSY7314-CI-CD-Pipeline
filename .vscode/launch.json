@@ -1,0 +1,44 @@
+{
+    "configurations": [
+        {
+            "type": "msedge",
+            "name": "Launch Microsoft Edge",
+            "request": "launch",
+            "runtimeArgs": [
+                "--remote-debugging-port=9222"
+            ],
+            "url": "https://localhost:5173", // Provide your project's url to finish configuring
+            "webRoot": "C:\\Users\\Godfr\\Downloads\\INSY7314-TASK-2-main\\INSY7314-TASK-2-main/client",
+            "presentation": {
+                "hidden": false
+            }
+        },
+        {
+            "type": "msedge",
+            "name": "Launch Edge Headless",
+            "request": "launch",
+            "runtimeArgs": [
+                "--headless",
+                "--remote-debugging-port=9222"
+            ],
+            "url": "https://localhost:5173",
+            "webRoot": "C:\\Users\\Godfr\\Downloads\\INSY7314-TASK-2-main\\INSY7314-TASK-2-main/client"
+        },
+        {
+            "type": "vscode-edge-devtools.debug",
+            "name": "Attach Edge DevTools",
+            "request": "attach",
+            "url": "https://localhost:5173",
+            "webRoot": "C:\\Users\\Godfr\\Downloads\\INSY7314-TASK-2-main\\INSY7314-TASK-2-main/client"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch Edge + DevTools",
+            "configurations": [
+                "Launch Microsoft Edge",
+                "Attach Edge DevTools"
+            ]
+        }
+    ]
+}

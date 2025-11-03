@@ -37,9 +37,12 @@ router.post('/payments', [
   }
 });
 
-// Staff: list pending payments
+// Staff: list all payments (pending, verified, and submitted)
 router.get('/staff/payments', authenticateToken, authorizeRole('employee'), async (req, res) => {
-  const payments = await Payment.findAll({ where: { status: 'pending' }, include: [{ model: User, attributes: ['fullName','accountNumber','username'] }]});
+  const payments = await Payment.findAll({ 
+    include: [{ model: User, attributes: ['fullName','accountNumber','username'] }],
+    order: [['createdAt', 'DESC']]  // Most recent first
+  });
   res.json({ payments });
 });
 
@@ -68,6 +71,37 @@ router.post('/staff/payments/:id/submit', authenticateToken, authorizeRole('empl
   // Log for auditing
   console.log(`Payment ${payment.id} submitted to SWIFT by employee ${req.user.id}`);
   res.json({ message: 'Submitted to SWIFT', payment });
+});
+
+// Staff: delete a payment from the system
+router.delete('/staff/payments/:id', authenticateToken, authorizeRole('employee'), async (req, res) => {
+  try {
+    const payment = await Payment.findByPk(req.params.id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found' });
+
+    // Store payment info for logging before deletion
+    const paymentInfo = {
+      id: payment.id,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      customerId: payment.customerId
+    };
+
+    // Delete the payment
+    await payment.destroy();
+
+    // Log for auditing
+    console.log(`Payment ${paymentInfo.id} (${paymentInfo.amount} ${paymentInfo.currency}) deleted by employee ${req.user.id}`);
+    
+    res.json({ 
+      message: 'Payment deleted successfully', 
+      deletedPayment: paymentInfo 
+    });
+  } catch (e) {
+    console.error('Error deleting payment:', e);
+    res.status(500).json({ error: 'Failed to delete payment' });
+  }
 });
 
 module.exports = router;
