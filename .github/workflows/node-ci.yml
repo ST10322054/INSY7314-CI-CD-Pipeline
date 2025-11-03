@@ -1,0 +1,37 @@
+name: Node.js Server CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: List repo structure (debug)
+        run: ls -R
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: |
+          echo "Current directory: $(pwd)"
+          cd server || cd Server || exit 1
+          echo "Now in: $(pwd)"
+          npm install
+
+      - name: Start server (test)
+        run: |
+          cd server || cd Server || exit 1
+          npm run start &
+          sleep 5
+          echo "Server started successfully"
